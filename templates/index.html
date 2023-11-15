@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Shopping Assistant</title>
+    <style>
+        /* 추가된 스타일 */
+        header {
+            background-color: #456;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        h1, h2, footer {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 수정된 부분 -->
+    <header>
+        <h1>당신을 위한 쇼핑 매니저</h1>
+        <p class="subtitle">원하는 옷을 채팅으로 말하면 찾아드립니다.</p>
+    </header>
+    <div class="container">
+     
+        <section id="chat-box">
+            <!-- Chat messages will be displayed here -->
+        </section>
+        <section id="user-input">
+            <input type="text" id="user-message" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </section>
+        <section id="image-upload">
+            <label for="image">Upload an image:</label>
+            <input type="file" id="image" accept="image/*">
+            <button onclick="searchSimilarClothes()">Search Similar Clothes</button>
+        </section>
+    </div>
+    <!-- 수정된 부분 -->
+    <footer>
+        <p>&copy; 2023 Dongyang | Student ID: 20211880 | Name: Kim Suji</p>
+    </footer>
+    <script>
+        // ChatGPT API에 메시지를 보내고 응답을 받아오기 위한 함수
+        async function getGptResponse(userMessage) {
+            // ChatGPT API에 사용자 메시지를 전송하고 응답을 받아오기
+            var response = await fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'user_message': userMessage,
+                }),
+            });
+        
+            // JSON 형태로 받은 응답을 JavaScript 객체로 변환
+            var responseData = await response.json();
+        
+            // ChatGPT에서 받은 응답 메시지를 반환
+            return responseData.ai_response;
+        }
+        
+        // 이미지 업로드 및 검색 유사 옷 검색
+        async function searchSimilarClothes() {
+            var inputElement = document.getElementById("image");
+            var file = inputElement.files[0];
+        
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = async function (e) {
+                    var imageUrl = e.target.result;
+        
+                    try {
+                        // GPT-3.5 API를 통해 이미지와 관련된 텍스트를 얻어옴
+                        var responseText = await getSimilarClothesText(imageUrl);
+                        // 얻어온 텍스트를 채팅 박스에 표시
+                        document.getElementById('chat-box').innerHTML += '<p>User: ' + responseText + '</p>';
+                        
+                        // ChatGPT API에 메시지를 보내고 응답을 받아와 표시
+                        var aiResponse = await getGptResponse(responseText);
+                        document.getElementById('chat-box').innerHTML += '<p>AI: ' + aiResponse + '</p>';
+                    } catch (error) {
+                        console.error("Error fetching similar clothes:", error);
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Please select an image file.");
+            }
+        }
+        </script>
+</body>
+
+</html>
