@@ -4,7 +4,7 @@ import openai
 app = Flask(__name__)
 
 # OpenAI ChatGPT API 키 설정
-openai.api_key = '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'  # 여러분의 ChatGPT API 키로 대체해주세요.
+openai.api_key = ''  # 여러분의 ChatGPT API 키로 대체해주세요.
 
 # templates 및 static 디렉토리 설정
 app.template_folder = 'templates'
